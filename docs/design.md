@@ -16,3 +16,13 @@ A custom closed surface and its tetrahedral interior are a separate geometry
 experiment. Passing a mesh-quality check does not establish that the stochastic
 simulation has converged with respect to spatial resolution. Surface playback
 must not be described as a volume rendering or an interior slice.
+
+# Recognizable engineering interior
+
+The engine option adds a conceptual annular cavity with a tapered excluded core,
+twelve stationary vanes and six connected bypass passages. It retains both
+existing presets. The closed original surface is tetrahedralized and simulated
+with the same idealized chemistry; it is explicitly a sealed microscopic
+reaction–diffusion demo, not a combustion or airflow simulation. Axis sections,
+camera presets and optional depth shading make the interior inspectable. See
+`engine.md` for the meshing pipeline, license and scope.

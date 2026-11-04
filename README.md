@@ -4,6 +4,12 @@ A 3D reaction–diffusion experiment with real [STEPS](https://steps.sourceforge
 data, an original closed surface tetrahedralized into a volume, and an interactive
 WebGL viewer. Open source under GPL-2.0-only.
 
+Three geometries are available: a conceptual **engine interior** with twelve
+stator vanes and six bypass passages, the original twin chambers, and the
+official STEPS slab. The engine is an idealized sealed microscale cavity for
+chemical reaction–diffusion; no airflow, combustion or engine performance is
+simulated. [Geometry, methods and limitations](docs/engine.md).
+
 ![Interactive chemical-wave viewer](docs/preview.png)
 
 ## View locally
@@ -16,6 +22,12 @@ Open <http://127.0.0.1:8765>. Playback needs a modern browser with WebGL. There 
 no frontend build, CDN, analytics, API key or paid service. The viewer loads the
 bundled recordings, so **STEPS is not required to view them**.
 
+On macOS, run `python3 scripts/local_preview.py start` for a background preview
+at <http://127.0.0.1:8766/> that lasts until logout or restart. It stages public
+assets in `/tmp`, loads a session launchd service, and installs no login item.
+Run `start` again to refresh the staged site after changing source files, or
+`python3 scripts/local_preview.py stop` to stop it.
+
 Drag to orbit, scroll to zoom, select X or Y, scrub time, play/pause, toggle mesh
 edges and use the volume cutaway. Keyboard: focus the canvas and use arrow keys
 to rotate or Space to play/pause. Each species uses a fixed color range across
@@ -25,6 +37,12 @@ regional concentration traces.
 The default logarithmic color mapping reveals structure across the wide
 concentration range. Its `log(1 + c/µM)` transform is labeled in the legend;
 switch to linear mapping for proportional colors. Neither changes stored values.
+Three-quarter, axial and interior camera presets help inspect the engine.
+Sections can run along x, y or z. Optional depth shading can be disabled to view
+the exact unshaded color transfer function.
+The engine initially uses a labeled 99.5th-percentile color range, saturating
+rare peaks. Full-range logarithmic and linear mappings remain available. Gray
+core and vane geometry is a toggleable solid-context overlay, not chemical data.
 
 **This is interactive playback, not a live solver.** Camera and display controls
 do not change the chemical trajectory. The official slab dataset is a surface
@@ -41,6 +59,9 @@ python3.12 -m venv .venv
 .venv/bin/python scripts/build_volume.py
 .venv/bin/python scripts/simulate_volume.py
 .venv/bin/python scripts/convert_recording.py
+# Additional engine interior:
+.venv/bin/python scripts/build_engine.py
+.venv/bin/python scripts/simulate_volume.py --preset engine
 ```
 
 `build_volume.py` creates two chambers joined by a neck, exports a closed STL,
@@ -77,7 +98,7 @@ are necessary if a compatible wheel is unavailable. See the
 python3 -m unittest discover -s tests -v
 .venv/bin/python -m playwright install chromium
 # With the localhost server running:
-.venv/bin/python tests/browser.py
+SIMS_URL=http://127.0.0.1:8765/ .venv/bin/python tests/browser.py
 ```
 
 The conversion test checks every displayed baseline concentration against its

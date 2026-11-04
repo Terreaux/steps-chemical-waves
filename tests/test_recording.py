@@ -56,6 +56,37 @@ class RecordingTests(unittest.TestCase):
             self.assertTrue(all(math.isfinite(v) and v>=0 for v in values))
             self.assertGreater(max(values)-min(values),1)
 
+    def test_engine_volume_and_recording(self):
+        report = json.loads((ROOT/'meshes/engine-quality.json').read_text())
+        self.assertTrue(report['watertight'] and report['connectedBoundary'])
+        self.assertEqual(report['statorVanes'], 12)
+        self.assertEqual(report['bypassPassages'], 6)
+        self.assertGreater(report['minSICN'], .1)
+        self.assertLess(report['volumeRelativeError'], .03)
+        from scripts.build_volume import validate_surface
+        self.assertEqual(validate_surface(ROOT/'meshes/engine-cavity.stl'), report['inputSurfaceTriangles'])
+        meta = json.loads((ROOT/'engine/manifest.json').read_text())
+        self.assertEqual(meta['meshSHA256'], hashlib.sha256((ROOT/'meshes/engine-cavity.msh').read_bytes()).hexdigest())
+        self.assertEqual(meta['cells'], report['tetrahedra'])
+        self.assertEqual(meta['faces'], meta['cells']*4)
+        self.assertEqual(len(meta['times']), 101)
+        self.assertTrue(all(a < b for a,b in zip(meta['times'],meta['times'][1:])))
+        for species in ['X','Y']:
+            raw=(ROOT/f'engine/{species}.f32').read_bytes()
+            values=struct.unpack('<'+str(len(raw)//4)+'f',raw)
+            self.assertEqual(len(values), meta['cells']*len(meta['times']))
+            self.assertTrue(all(math.isfinite(v) and v>=0 for v in values))
+            self.assertGreater(meta['species'][species]['displayP995'],0)
+            self.assertLess(meta['species'][species]['displayP995'],max(values))
+            for region in ['left','right']:
+                self.assertEqual(len(meta['traces'][species][region]), len(meta['times']))
+                self.assertTrue(all(math.isfinite(v) and v>=0 for v in meta['traces'][species][region]))
+
+    def test_twin_chamber_assets_unchanged(self):
+        first=json.loads((ROOT/'docs/validation.json').read_text())
+        for name,digest in first['recordingSHA256'].items():
+            self.assertEqual(hashlib.sha256((ROOT/'volume'/name).read_bytes()).hexdigest(),digest)
+
 
 if __name__ == '__main__':
     unittest.main()

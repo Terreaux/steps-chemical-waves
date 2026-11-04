@@ -1,0 +1,34 @@
+{
+  "generator": "Gmsh 4.15.2",
+  "unit": "\u00b5m",
+  "source": "Original Terreaux conceptual annular engine cavity; GPL-2.0-only",
+  "surfaceToVolume": "Watertight STL import \u2192 preserve boundary facets \u2192 surface loop \u2192 tetrahedralize interior",
+  "statorVanes": 12,
+  "bypassPassages": 6,
+  "inputSurfaceWatertight": true,
+  "inputSurfaceTriangles": 20440,
+  "nodes": 14807,
+  "tetrahedra": 55473,
+  "boundaryTriangles": 20440,
+  "connectedBoundary": true,
+  "watertight": true,
+  "nonManifoldFaces": 0,
+  "minimumTetVolumeUm3": 8.80183932614078e-07,
+  "volumeUm3": 29.140389165406944,
+  "CADVolumeUm3": 29.157433531073732,
+  "volumeRelativeError": 0.0005845633035096442,
+  "minSICN": 0.1305049160592144,
+  "medianSICN": 0.8510745204621717,
+  "boundsUm": [
+    [
+      -2.8,
+      -2.13,
+      -1.868749537379655
+    ],
+    [
+      2.8,
+      2.13,
+      1.868749537379655
+    ]
+  ]
+}

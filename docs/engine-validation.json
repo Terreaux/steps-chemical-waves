@@ -1,0 +1,84 @@
+{
+  "date": "2026-11-04",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "preset": "engine",
+  "solver": "Tetexact",
+  "STEPS": "5.1.0",
+  "seed": 1234,
+  "durationSeconds": 4.0,
+  "frames": 101,
+  "simulationRuntimeSeconds": 255.48964387498563,
+  "mesh": {
+    "generator": "Gmsh 4.15.2",
+    "unit": "\u00b5m",
+    "source": "Original Terreaux conceptual annular engine cavity; GPL-2.0-only",
+    "surfaceToVolume": "Watertight STL import \u2192 preserve boundary facets \u2192 surface loop \u2192 tetrahedralize interior",
+    "statorVanes": 12,
+    "bypassPassages": 6,
+    "inputSurfaceWatertight": true,
+    "inputSurfaceTriangles": 20440,
+    "nodes": 14807,
+    "tetrahedra": 55473,
+    "boundaryTriangles": 20440,
+    "connectedBoundary": true,
+    "watertight": true,
+    "nonManifoldFaces": 0,
+    "minimumTetVolumeUm3": 8.80183932614078e-07,
+    "volumeUm3": 29.140389165406944,
+    "CADVolumeUm3": 29.157433531073732,
+    "volumeRelativeError": 0.0005845633035096442,
+    "minSICN": 0.1305049160592144,
+    "medianSICN": 0.8510745204621717,
+    "boundsUm": [
+      [
+        -2.8,
+        -2.13,
+        -1.868749537379655
+      ],
+      [
+        2.8,
+        2.13,
+        1.868749537379655
+      ]
+    ]
+  },
+  "meshSHA256": "e605fcb7b60f73671b837fd64511805289f896d3efe5e7fc50b69d43a1b7126f",
+  "recordingSHA256": {
+    "face-cells.f32": "031a71b47fd323e22be374df245c78f5d0ba048055721a73b19dee7e5f1d0e28",
+    "Y.f32": "26802a7ef2695e3a39b914ad0c0da0993ddee31d109ada01b261bf5d7c54e7ed",
+    "X.f32": "69455b738b3fd99727cfebe65fede9f0f898502409944cf45bb2f5b91dcaf061",
+    "positions.f32": "290dbdad696796ab0cd5d0860631de282be57c9419fe3c84eedf7239bc918c52",
+    "centers.f32": "37a23645861fab073d97a7b23fb7a64da90386fda6e0eea85d960ce0b1d3f293"
+  },
+  "engineSeededRepeatPerformed": false,
+  "tests": {
+    "pythonUnittest": "5 passed; no skips",
+    "browser": {
+      "browser": "Chromium",
+      "errors": [],
+      "checks": [
+        "load",
+        "recorded time",
+        "species",
+        "color mapping",
+        "mesh edges",
+        "orbit",
+        "play/pause",
+        "cutaway axes",
+        "camera presets",
+        "twin chamber preserved",
+        "baseline switch",
+        "mobile overflow"
+      ]
+    }
+  },
+  "preservedBaselines": "Original twin-chamber recording hashes match docs/validation.json; official slab conversion still matches every archived concentration.",
+  "scope": "Original conceptual sealed microscopic engine cavity. Reaction-diffusion only; no airflow, combustion, heat transfer or engine performance.",
+  "limitations": [
+    "Single stochastic trajectory",
+    "Engine trajectory has not been independently repeated",
+    "Mesh/time convergence and independent solver validation not performed",
+    "Rare-peak color clipping is visual only and explicitly labeled",
+    "Gray hardware is context, not chemical data"
+  ]
+}

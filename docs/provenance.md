@@ -58,7 +58,7 @@ rate constants. X is initially raised to 50 µM where x < −1.2 µm; elsewhere 
 forcing. A single trajectory illustrates the model; it is not statistical
 evidence of a biological phenomenon or a validated prediction.
 
-The cutaway discards whole tetrahedra by their center x coordinate and draws
+The cutaway discards whole tetrahedra by their center coordinate on a selected axis and draws
 the remaining tetrahedron faces. Its boundary is a discrete, stepped selection,
 not a geometrically interpolated section. Concentrations remain per-tetrahedron
 values, with fixed per-species color limits across the complete recording.
@@ -68,7 +68,12 @@ initially to reveal low-concentration structure, is
 `log(1 + c / 1 µM) / log(1 + c_max / 1 µM)`. The legend labels this transform;
 the stored concentrations and plotted regional means remain in µM. Color limits
 remain fixed across time and cutaway positions in both mappings. Color is
-constant within each tetrahedron; no lighting alters its assigned value.
+constant within each tetrahedron. Optional depth shading changes display
+brightness and can be disabled; it does not change scalar data or plotted means.
+
+The additional engine-interior preset has its own geometry, recording and
+[scientific-scope documentation](engine.md). The twin-chamber and slab assets
+remain unchanged.
 
 ## Model and limitations
 
