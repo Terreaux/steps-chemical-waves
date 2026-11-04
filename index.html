@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Chemical Waves · Terreaux Sims</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><a class="brand" href="./">T<span>TERREAUX / SIMS</span></a><span class="edition">01 — REACTION & DIFFUSION</span><a href="https://github.com/Terreaux/steps-chemical-waves">Source ↗</a></header>
+<main>
+<section class="intro"><div><p class="eyebrow">COMPUTATIONAL SCIENCE, MADE VISIBLE</p><h1>Chemistry in motion<span>.</span></h1><p>Local reactions. Molecular diffusion. Patterns that emerge.</p></div><div class="recording"><i></i> STEPS · recorded simulation<br><small>Interactive playback · no live solver</small></div></section>
+<div class="workspace">
+<section class="stage" aria-label="Interactive simulation"><canvas id="scene" tabindex="0" aria-label="3D concentration field. Drag to orbit; scroll to zoom. Arrow keys rotate."></canvas><div class="stage-top"><span id="geometryLabel">Loading geometry…</span><span id="status" role="status">Loading recording…</span></div><div class="stage-bottom"><span>DRAG TO ORBIT · SCROLL TO ZOOM</span><button id="reset">Reset view ↗</button></div><div class="scale"><span id="scaleTitle">X concentration / µM</span><div></div><footer><span>0</span><span id="rangeMax"></span></footer></div></section>
+<aside>
+<p class="eyebrow">THE EXPERIMENT</p><h2>Spatial Brusselator</h2><p class="description">A chemical oscillator coupled through diffusion. Each mesh element follows the same reaction network; stochastic molecular events create local differences.</p>
+<label for="preset">GEOMETRY</label><select id="preset"><option value="data">Official slab · recorded</option></select>
+<label for="species">MOLECULAR SPECIES</label><select id="species"><option value="X">X · activator</option><option value="Y">Y · intermediate</option></select>
+<label for="mapping">COLOR MAPPING</label><select id="mapping"><option value="log" selected>Logarithmic · reveal structure</option><option value="linear">Linear · proportional values</option></select>
+<div class="metrics"><div><small>DIFFUSION</small><strong>10⁻¹³ <span>m²/s</span></strong></div><div><small>FRAMES</small><strong id="frameCount">—</strong></div></div>
+<label for="cut">VOLUME CUTAWAY <span id="cutValue">100%</span></label><input id="cut" type="range" min="0.05" max="1" value="1" step="0.01" disabled><p class="hint" id="cutHint">The slab recording contains surface data only.</p>
+<label class="check"><input type="checkbox" id="edges"> Show mesh edges</label>
+<details><summary>Model & provenance</summary><p>∅ ⇌ X → Y<br>2X + Y → 3X</p><p>A = 0.3, B = 3; TF = 10; CF = 50,000. The source script defines dimensional rate constants.</p><p id="provenance">Official CNS-OIST/STEPS_Example recording. Surface extraction of a 10 × 10 × 0.2 µm tetrahedral slab. Values use a fixed color scale across all frames; there is no temporal interpolation.</p><p><a href="docs/provenance.md">Sources, methods & limitations ↗</a></p></details>
+</aside>
+</div>
+<section class="transport"><button id="play" disabled aria-label="Play simulation">Play ▶</button><div class="timeline"><div><span>SIMULATION TIME</span><output id="time">0.00 s</output></div><input id="timeline" type="range" min="0" max="150" value="0" step="1" aria-label="Simulation time" disabled><div><span id="startTime">0 s</span><span id="endTime">1.50 s</span></div></div><div class="speed"><label for="speed">PLAYBACK</label><select id="speed"><option value="0.1">0.1×</option><option value="0.25" selected>0.25×</option><option value="0.5">0.5×</option><option value="1">1×</option></select></div></section>
+<section id="tracePanel" hidden><div class="trace-heading"><div><p class="eyebrow">FROM FIELD TO MEASUREMENT</p><h2>Two chambers. One reaction network.</h2><p>Volume-weighted regional means / <span id="traceSpecies">X</span> concentration (µM)</p></div><div class="trace-key"><span>● Left chamber</span><span>● Right chamber</span></div></div><canvas id="trace" aria-label="Recorded volume-weighted concentration over time in each chamber"></canvas><p class="hint">Regions: cell centers x &lt; −0.5 µm (left) and x &gt; 0.5 µm (right). The left chamber receives an initial stimulus. One stochastic trajectory; no uncertainty estimate.</p></section>
+<section class="notes"><div><span>01 / REACT</span><p>Autocatalysis amplifies local changes in concentration.</p></div><div><span>02 / DIFFUSE</span><p>Molecules move between neighboring tetrahedral elements.</p></div><div><span>03 / INSPECT</span><p>Explore recorded states without changing the underlying experiment.</p></div></section>
+<footer class="page-footer"><span>TERREAUX — EXPLORATIONS IN SCIENTIFIC COMPUTING</span><a href="LICENSE">Open source · GPL-2.0</a></footer>
+</main><script type="module" src="app.js"></script></body></html>

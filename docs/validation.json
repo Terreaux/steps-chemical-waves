@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-04",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "STEPS": "5.1.0",
+  "solver": "Tetexact",
+  "seed": 1234,
+  "durationSeconds": 3.0,
+  "frames": 151,
+  "savedTetrahedra": 9202,
+  "seededRepeatByteIdentical": true,
+  "recordingSHA256": {
+    "face-cells.f32": "5d8f59ace5b4ae482c541eac1e340cc36a4177805697d431709eea70a63607d1",
+    "Y.f32": "7fbea359e9e2ce145f1f8e69221dbf739e8fc94503952a69376e673cce44c524",
+    "X.f32": "9ce1fd54ca01959a3edad5f736b876a9c2b5829ce47c7749521fd37c669f5e9a",
+    "positions.f32": "cec6443a025f69d458543c6a62d4adf8a25895f8396ce0b2cbd238f19c606e46",
+    "centers.f32": "dbff49a64025ee00cc9ecc8cb0775fff8874e80b6bf699689407681d0deae673"
+  },
+  "tests": {
+    "pythonUnittest": "3 passed; no skips",
+    "browser": "Chromium: load, time, species, color mapping, mesh edges, keyboard orbit, play/pause, volume cutaway, baseline switch, mobile overflow; no JavaScript page errors"
+  },
+  "limitations": [
+    "Single trajectory",
+    "Mesh/time convergence not performed",
+    "No independent cross-solver validation",
+    "Local playback; no deployment"
+  ]
+}

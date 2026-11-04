@@ -1,0 +1,32 @@
+{
+  "generator": "Gmsh 4.15.2",
+  "unit": "\u00b5m",
+  "source": "Original Terreaux synthetic geometry; GPL-2.0-only",
+  "surfaceToVolume": "STL import \u2192 classify \u2192 discrete geometry \u2192 surface loop \u2192 tetrahedralize",
+  "nodes": 2305,
+  "tetrahedra": 9202,
+  "boundaryTriangles": 2766,
+  "connectedBoundary": true,
+  "watertight": true,
+  "nonManifoldFaces": 0,
+  "minimumTetVolumeUm3": 6.776088261512162e-05,
+  "volumeUm3": 23.59547182151833,
+  "CADVolumeUm3": 24.043059642728533,
+  "volumeRelativeError": 0.01861609245500373,
+  "minSICN": 0.36077038794716043,
+  "medianSICN": 0.8754014288577179,
+  "boundsUm": [
+    [
+      -3.1911118565375958,
+      -1.3941573013645603,
+      -1.3992561573966644
+    ],
+    [
+      3.1909395885311147,
+      1.3935075151893337,
+      1.3977127648644572
+    ]
+  ],
+  "inputSurfaceTriangles": 2348,
+  "inputSurfaceWatertight": true
+}
