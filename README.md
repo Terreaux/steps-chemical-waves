@@ -19,6 +19,12 @@ are available with a poster and [website embed instructions](media/README.md).
 The forward-only ten-second clip is retained. Scientific scope and reverse
 playback are labeled on screen.
 
+A [smooth surface version](media/smooth-preview.html) is also available as
+[MP4](media/engine-activator-smooth-bounce.mp4) and
+[WebM](media/engine-activator-smooth-bounce.webm). It uses
+[documented nodal recovery and linear scalar interpolation](docs/smooth-surface.md)
+of the same simulation data. The original cell-value videos are preserved.
+
 ## View locally
 
 ```sh

@@ -102,7 +102,7 @@
     "engine-activator-bounce.webm": true,
     "engine-activator-orbit.webm": true
   },
-  "publication": "Local iteration; not pushed or deployed.",
+  "publication": "Prepared and validated locally before repository publication.",
   "fieldVertexCoordinatesModified": false,
   "grayHardwareDisplayInsetUm": 0.005
 }

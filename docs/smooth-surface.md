@@ -1,4 +1,4 @@
-# Smooth surface-field rendering — local iteration
+# Smooth surface-field rendering
 
 The smooth view uses the same 10-second STEPS trajectory, seed 1234, 55,473
 tetrahedra and 251 recorded states as the original videos. The earlier videos

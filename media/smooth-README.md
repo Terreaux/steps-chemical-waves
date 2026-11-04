@@ -1,4 +1,4 @@
-# Smooth activator surface — local iteration
+# Smooth activator surface
 
 The new files are separate from all earlier videos:
 
@@ -17,7 +17,7 @@ See [the interpolation method and limits](../docs/smooth-surface.md). This is a
 visual reconstruction; quantitative analysis uses the original cell data.
 The reverse half is explicitly labeled playback of recorded states.
 
-This iteration is kept on a local GitButler branch. It has not been pushed to
-the public repository or deployed to a website. Capture and verification use
-temporary localhost servers that close afterward; the port-8766 service stays
-stopped.
+This version was prepared and validated on `leo/smooth-surface-render`.
+The separate filenames preserve the earlier cell-value videos. Capture and
+verification use temporary localhost servers that close afterward; repository
+publication does not start the port-8766 service.
