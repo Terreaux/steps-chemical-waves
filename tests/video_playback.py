@@ -1,5 +1,6 @@
 """Validate both site-video encodings and actual browser playback."""
 import json
+import argparse
 import re
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -9,12 +10,15 @@ import threading
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
+parser=argparse.ArgumentParser()
+parser.add_argument('--field',choices=['cells','smooth'],default='cells')
+smooth=parser.parse_args().field=='smooth'
 results=[]
 class VideoHandler(SimpleHTTPRequestHandler):
     # Match the byte-range behavior of a normal static website host. Python's
     # basic SimpleHTTPRequestHandler does not implement media seeking ranges.
     def do_GET(self):
-        names={f'/engine-activator-{v}.{s}' for v in ['orbit','bounce'] for s in ['mp4','webm']}
+        names={f'/engine-activator-{v}.{s}' for v in ['orbit','bounce','smooth-orbit','smooth-bounce'] for s in ['mp4','webm']}
         if self.path not in names:
             return super().do_GET()
         data=(ROOT/'media'/self.path.lstrip('/')).read_bytes()
@@ -37,14 +41,14 @@ class VideoHandler(SimpleHTTPRequestHandler):
 
 server=ThreadingHTTPServer(('127.0.0.1',0),partial(VideoHandler,directory=str(ROOT/'media')))
 threading.Thread(target=server.serve_forever,daemon=True).start()
-url=f'http://127.0.0.1:{server.server_port}/preview.html'
+url=f'http://127.0.0.1:{server.server_port}/'+('smooth-preview.html' if smooth else 'preview.html')
 with sync_playwright() as p:
     browser=p.chromium.launch(headless=True)
     page=browser.new_page(viewport={'width':1440,'height':1000})
     errors=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(url)
-    for variant,suffix,duration in [(v,s,d) for v,d in [('orbit',10),('bounce',20)] for s in ['mp4','webm']]:
+    for variant,suffix,duration in [(('smooth-'+v) if smooth else v,s,d) for v,d in [('orbit',10),('bounce',20)] for s in ['mp4','webm']]:
         path=ROOT/f'media/engine-activator-{variant}.{suffix}'
         probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))
         streams=probe['streams']
@@ -65,7 +69,7 @@ with sync_playwright() as p:
         after=page.locator('#film').screenshot()
         assert before!=after,'The decoded orbit frames must change'
         seek_times=[5]
-        if variant=='bounce':
+        if variant.endswith('bounce'):
             page.evaluate('document.getElementById("film").currentTime=15')
             page.wait_for_function('Math.abs(document.getElementById("film").currentTime-15)<.05 && !document.getElementById("film").seeking && document.getElementById("film").readyState>=2')
             seek_times.append(15)
@@ -78,5 +82,5 @@ with sync_playwright() as p:
     browser.close()
 server.shutdown();server.server_close()
 report={'formats':results,'browser':'Chromium','pageErrors':errors,'temporaryPlaybackServer':'stopped after verification'}
-(ROOT/'media/playback-validation.json').write_text(json.dumps(report,indent=2)+'\n')
+(ROOT/('media/smooth-playback-validation.json' if smooth else 'media/playback-validation.json')).write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

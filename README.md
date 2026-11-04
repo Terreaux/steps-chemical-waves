@@ -102,7 +102,7 @@ are necessary if a compatible wheel is unavailable. See the
 ## Validate
 
 ```sh
-python3 -m unittest discover -s tests -v
+.venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m playwright install chromium
 # With the localhost server running:
 SIMS_URL=http://127.0.0.1:8765/ .venv/bin/python tests/browser.py

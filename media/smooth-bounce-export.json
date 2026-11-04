@@ -1,0 +1,37 @@
+{
+  "durationSeconds": 20,
+  "fps": 30,
+  "frames": 600,
+  "width": 1280,
+  "height": 720,
+  "simulationDurationSeconds": 10,
+  "simulationSaveIntervalSeconds": 0.04,
+  "simulationSavedStates": 251,
+  "forwardVideoSeconds": [
+    0,
+    10
+  ],
+  "reverseVideoSeconds": [
+    10,
+    20
+  ],
+  "camera": "One full rotation forward, followed by the same rotation backward",
+  "playback": "Forward frames 0\u2026299 then 299\u20260. A repeated endpoint frame at each turnaround.",
+  "scientificScope": "Reverse is video playback of saved states, never reversed solver dynamics.",
+  "directionLabels": [
+    "FORWARD PLAYBACK",
+    "REVERSE PLAYBACK"
+  ],
+  "sourceVideoSHA256": "219dff4992c1d13c71c717921eed463538ac43d0384b1edf1fc1694e7b410804",
+  "files": {
+    "engine-activator-smooth-bounce.mp4": {
+      "bytes": 4965611,
+      "SHA256": "d6a612ace55d5ebf2b0c05998a24500bd4b4a16b99c1bd46e201eabb448aaeec"
+    },
+    "engine-activator-smooth-bounce.webm": {
+      "bytes": 3188172,
+      "SHA256": "504a6c66f7b29d14f4e83e7ebba6dfcb1174fb736ac7cff6d1a003ec96bb577f"
+    }
+  },
+  "fieldRepresentation": "Volume-weighted nodal recovery and linear surface interpolation"
+}

@@ -1,12 +1,16 @@
 """Verify that the movie returns through the same recorded states and views."""
 import json
+import argparse
 from pathlib import Path
 import subprocess
 
 import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
-movie=ROOT/'media/engine-activator-bounce.mp4'
+parser=argparse.ArgumentParser()
+parser.add_argument('--field',choices=['cells','smooth'],default='cells')
+smooth=parser.parse_args().field=='smooth'
+movie=ROOT/('media/engine-activator-smooth-bounce.mp4' if smooth else 'media/engine-activator-bounce.mp4')
 indices=[0,75,150,299,300,449,524,599]
 selection='+'.join(f'eq(n,{i})' for i in indices)
 filters=f"select='{selection}',crop=1280:560:0:100,scale=640:280"
@@ -22,5 +26,5 @@ for i in [0,75,150,299]:
     pairs.append({'forwardFrame':i,'reverseFrame':opposite,'meanAbsoluteRGBError':error})
 report={'criterion':'Same data/view at mirrored frame indices; exclude direction labels and allow lossy-codec error',
         'maximumAllowedMeanRGBError':3,'pairs':pairs,'result':'passed'}
-(ROOT/'media/bounce-validation.json').write_text(json.dumps(report,indent=2)+'\n')
+(ROOT/('media/smooth-bounce-validation.json' if smooth else 'media/bounce-validation.json')).write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

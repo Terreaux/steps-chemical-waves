@@ -2,12 +2,15 @@
 const $ = id => document.getElementById(id);
 const canvas = $('scene');
 const captureMode = new URLSearchParams(location.search).get('capture') === '1';
+const smoothRequested = new URLSearchParams(location.search).get('field') === 'smooth';
 document.body.classList.toggle('capture-mode',captureMode);
 $('captureOverlay').hidden=!captureMode;
 let gl, program, manifest, positions, centers, fields, faceCells, frame = 0, playing = false;
 let yaw = 0.2, pitch = -0.35, zoom = 1, loaded = false, activePreset = 'data';
 const buffers = {};
 const hardwareBuffers = {};
+const smoothBuffers = {};
+let smoothData=null,smoothGeometryKey='',smoothNodeMap=null,smoothVertexCount=0;
 let hardwarePositions = null;
 function shader(type, source) {
   const s = gl.createShader(type); gl.shaderSource(s, source); gl.compileShader(s);
@@ -20,14 +23,16 @@ function initialize() {
   if (!gl.getExtension('OES_standard_derivatives')) throw Error('This viewer requires WebGL standard derivatives.');
   program = gl.createProgram();
   gl.attachShader(program, shader(gl.VERTEX_SHADER, `
-    attribute vec3 position; attribute float concentration; attribute vec3 bary; attribute vec3 center;
+    attribute vec3 position; attribute float concentration; attribute vec3 bary; attribute vec3 center; attribute vec3 normal;
     uniform vec4 camera; uniform float aspect; uniform float radius; uniform float cut; uniform vec3 cutAxis;
-    varying float value; varying vec3 edge; varying float visible; varying vec3 surfacePosition;
+    varying float value; varying vec3 edge; varying float visible; varying vec3 surfacePosition; varying vec3 vertexNormal;
     void main(){
       vec3 p=position/radius;
       float cy=cos(camera.x),sy=sin(camera.x),cx=cos(camera.y),sx=sin(camera.y);
       p=vec3(cy*p.x+sy*p.z,p.y,-sy*p.x+cy*p.z);
       p=vec3(p.x,cx*p.y-sx*p.z,sx*p.y+cx*p.z);
+      vec3 n=vec3(cy*normal.x+sy*normal.z,normal.y,-sy*normal.x+cy*normal.z);
+      vertexNormal=vec3(n.x,cx*n.y-sx*n.z,sx*n.y+cx*n.z);
       surfacePosition=p;
       gl_Position=vec4(p.x*camera.z/aspect,p.y*camera.z,-p.z*0.2,1.0);
       value=concentration; edge=bary; visible=step(dot(center,cutAxis),cut);
@@ -35,8 +40,8 @@ function initialize() {
   gl.attachShader(program, shader(gl.FRAGMENT_SHADER, `
     #extension GL_OES_standard_derivatives : enable
     precision highp float;
-    varying float value; varying vec3 edge; varying float visible; varying vec3 surfacePosition;
-    uniform float maximum; uniform float edges; uniform float logarithmic; uniform float lighting; uniform float hardware;
+    varying float value; varying vec3 edge; varying float visible; varying vec3 surfacePosition; varying vec3 vertexNormal;
+    uniform float maximum; uniform float edges; uniform float logarithmic; uniform float lighting; uniform float hardware; uniform float smoothShading;
     vec3 palette(float t){
       vec3 a=vec3(.07,.12,.23),b=vec3(.16,.34,.49),c=vec3(.24,.65,.61),d=vec3(.72,.84,.51),e=vec3(.96,.82,.51);
       if(t<.25)return mix(a,b,t*4.); if(t<.5)return mix(b,c,(t-.25)*4.);
@@ -47,20 +52,22 @@ function initialize() {
       vec3 w=smoothstep(vec3(0.),fwidth(edge)*1.1,edge);
       float line=min(w.x,min(w.y,w.z)); col=mix(col*.35,col,mix(1.,line,edges));
       vec3 normal=normalize(cross(dFdx(surfacePosition),dFdy(surfacePosition)));
+      if(smoothShading>.5 && length(vertexNormal)>.000001)normal=normalize(vertexNormal);
       float shade=.62+.38*abs(dot(normal,normalize(vec3(.3,.6,1.))));col*=mix(1.,shade,lighting);
       gl_FragColor=vec4(col,1.);
     }`));
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
   gl.useProgram(program); gl.enable(gl.DEPTH_TEST);
-  for (const key of ['position','concentration','bary','center']) {buffers[key] = gl.createBuffer();hardwareBuffers[key]=gl.createBuffer();}
+  for (const key of ['position','concentration','bary','center','normal']) {buffers[key] = gl.createBuffer();hardwareBuffers[key]=gl.createBuffer();smoothBuffers[key]=gl.createBuffer();}
 }
 function attribute(name, values, size, target=buffers) {
   gl.bindBuffer(gl.ARRAY_BUFFER, target[name]); gl.bufferData(gl.ARRAY_BUFFER, values, gl.DYNAMIC_DRAW);
   const at = gl.getAttribLocation(program, name); gl.enableVertexAttribArray(at); gl.vertexAttribPointer(at,size,gl.FLOAT,false,0,0);
 }
 function uniform(name, value) {gl.uniform1f(gl.getUniformLocation(program,name),value);}
-function bindGeometry(target){for(const [name,size] of [['position',3],['concentration',1],['bary',3],['center',3]]){gl.bindBuffer(gl.ARRAY_BUFFER,target[name]);const at=gl.getAttribLocation(program,name);gl.vertexAttribPointer(at,size,gl.FLOAT,false,0,0);}}
+function bindGeometry(target){for(const [name,size] of [['position',3],['concentration',1],['bary',3],['center',3],['normal',3]]){gl.bindBuffer(gl.ARRAY_BUFFER,target[name]);const at=gl.getAttribLocation(program,name);gl.vertexAttribPointer(at,size,gl.FLOAT,false,0,0);}}
+function isSmooth(){return activePreset==='engine' && $('fieldMode').value==='smooth' && smoothData;}
 function colorMaximum(){const s=manifest.species[$('species').value];return $('mapping').value==='robust'?s.displayP995:s.max;}
 function draw() {
   if (!loaded) return;
@@ -74,8 +81,10 @@ function draw() {
   uniform('lighting',$('lighting').checked?1:0);
   uniform('edges',$('edges').checked?1:0);uniform('cut',Number($('cut').value));
   const axis=$('cutAxis').value;gl.uniform3f(gl.getUniformLocation(program,'cutAxis'),axis==='x'?1:0,axis==='y'?1:0,axis==='z'?1:0);
-  bindGeometry(buffers);uniform('hardware',0);gl.drawArrays(gl.TRIANGLES,0,positions.length/3);
-  if(activePreset==='engine' && $('hardware').checked && hardwarePositions){bindGeometry(hardwareBuffers);uniform('hardware',1);gl.drawArrays(gl.TRIANGLES,0,hardwarePositions.length/3);}
+  uniform('hardware',0);
+  if(isSmooth()){ensureSmoothGeometry();bindGeometry(smoothBuffers);uniform('smoothShading',1);uniform('edges',0);gl.drawArrays(gl.TRIANGLES,0,smoothVertexCount);}
+  else{bindGeometry(buffers);uniform('smoothShading',0);gl.drawArrays(gl.TRIANGLES,0,positions.length/3);}
+  if(activePreset==='engine' && $('hardware').checked && hardwarePositions){bindGeometry(hardwareBuffers);uniform('hardware',1);uniform('smoothShading',0);gl.drawArrays(gl.TRIANGLES,0,hardwarePositions.length/3);}
   if(!captureMode)drawTrace();
 }
 function drawTrace(){
@@ -92,9 +101,10 @@ function drawTrace(){
 }
 function updateFrame() {
   if (!loaded) return;
-  const values=fields[$('species').value], n=manifest.faces, count=manifest.cells || n, expanded=new Float32Array(n*3);
-  for(let i=0;i<n;i++) expanded.fill(values[frame*count+(faceCells?faceCells[i]:i)],i*3,i*3+3);
-  attribute('concentration',expanded,1);
+  if(isSmooth()){if(!ensureSmoothGeometry())writeSmoothValues();}
+  else{const values=fields[$('species').value], n=manifest.faces, count=manifest.cells || n, expanded=new Float32Array(n*3);
+    for(let i=0;i<n;i++) expanded.fill(values[frame*count+(faceCells?faceCells[i]:i)],i*3,i*3+3);
+    attribute('concentration',expanded,1);}
   $('timeline').value=frame; $('time').value=`${manifest.times[frame].toFixed(2)} s`;
   $('scaleTitle').textContent=`${$('species').value} / µM · ${$('mapping').value==='linear'?'linear':'log(1 + c/µM)'}`;
   $('rangeMax').textContent=($('mapping').value==='robust'?'≥ ':'')+colorMaximum().toFixed(1);
@@ -127,8 +137,15 @@ async function load(preset) {
     if(preset==='engine')buildHardware(min,max);
   }
   attribute('position',positions,3);attribute('center',centers,3);
+  attribute('normal',new Float32Array(positions.length),3);
   const bary=new Float32Array(positions.length);for(let i=0;i<bary.length;i++)bary[i]=(i%9===0||i%9===4||i%9===8)?1:0;
   attribute('bary',bary,3);
+  $('fieldMode').disabled=preset!=='engine';
+  if(preset==='engine' && smoothRequested){await loadSmoothData();$('fieldMode').value='smooth';}
+  else $('fieldMode').value='cells';
+  smoothGeometryKey='';
+  $('edges').disabled=$('fieldMode').value==='smooth';
+  if($('edges').disabled)$('edges').checked=false;
   $('timeline').max=manifest.times.length-1;$('frameCount').textContent=manifest.times.length;
   $('speed').value=manifest.defaultSpeed || '0.25';
   $('robustOption').disabled=!manifest.species.X.displayP995;$('mapping').value=manifest.defaultMapping || 'log';
@@ -152,6 +169,7 @@ function togglePlay(){if(!loaded)return;playing=!playing;if(playing&&frame===man
 $('play').onclick=togglePlay;
 $('timeline').oninput=()=>{playing=false;$('play').textContent='Play ▶';$('play').setAttribute('aria-label','Play simulation');frame=Number($('timeline').value);updateFrame();};
 $('species').onchange=updateFrame;$('edges').onchange=draw;
+$('fieldMode').onchange=async()=>{try{if($('fieldMode').value==='smooth')await loadSmoothData();$('edges').disabled=$('fieldMode').value==='smooth';if($('edges').disabled)$('edges').checked=false;updateFrame();}catch(e){fail(e);}};
 $('mapping').onchange=updateFrame;
 $('lighting').onchange=draw;
 $('hardware').onchange=draw;
@@ -168,16 +186,53 @@ function buildHardware(min,max){
   function tri(a,b,c){p.push(...a,...b,...c);}
   function cone(x0,x1,r0,r1,startCap=false,endCap=false){for(let i=0;i<48;i++){const a=i*2*Math.PI/48,b=(i+1)*2*Math.PI/48;
     const u=[x0,r0*Math.cos(a),r0*Math.sin(a)],v=[x0,r0*Math.cos(b),r0*Math.sin(b)],w=[x1,r1*Math.cos(a),r1*Math.sin(a)],z=[x1,r1*Math.cos(b),r1*Math.sin(b)];tri(u,v,w);tri(v,z,w);if(startCap)tri([x0,0,0],v,u);if(endCap)tri([x1,0,0],w,z);}}
-  cone(-1.5,-.75,.2,.425,true,false);cone(-.75,.5,.425,.425);cone(.5,1.5,.425,.2,false,true);
+  // Recess only the gray display context by 5 nm to avoid depth fighting with
+  // the adjacent field surface. Solver geometry and concentration data stay fixed.
+  const inset=.005;
+  cone(-1.5,-.75,.2-inset,.425-inset,true,false);cone(-.75,.5,.425-inset,.425-inset);cone(.5,1.5,.425-inset,.2-inset,false,true);
   for(let i=0;i<12;i++){
     const a=i*Math.PI/6,c=Math.cos(a),s=Math.sin(a);
-    const v=[];for(const x of [-.375,-.025])for(const y of [.35,.9])for(const z of [-.0325,.0325])v.push([x,y*c-z*s,y*s+z*c]);
+    const v=[];for(const x of [-.375+inset,-.025-inset])for(const y of [.35+inset,.9-inset])for(const z of [-.0325+inset,.0325-inset])v.push([x,y*c-z*s,y*s+z*c]);
     for(const [a,b,c,d] of [[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]]){tri(v[a],v[b],v[c]);tri(v[a],v[c],v[d]);}
   }
   hardwarePositions=new Float32Array(p);const center=new Float32Array(p.length),bary=new Float32Array(p.length);
   for(let i=0;i<p.length;i++){center[i]=(p[i]-min[i%3])/(max[i%3]-min[i%3]);bary[i]=(i%9===0||i%9===4||i%9===8)?1:0;}
   attribute('position',hardwarePositions,3,hardwareBuffers);attribute('center',center,3,hardwareBuffers);
   attribute('bary',bary,3,hardwareBuffers);attribute('concentration',new Float32Array(p.length/3),1,hardwareBuffers);
+  attribute('normal',new Float32Array(p.length),3,hardwareBuffers);
+}
+async function loadSmoothData(){
+  if(smoothData)return;
+  const base='engine-smooth',meta=await fetchFile(`${base}/manifest.json`,true);
+  async function typed(file,Type){const r=await fetch(`${base}/${file}`);if(!r.ok)throw Error(`Missing smooth reconstruction: ${file}`);return new Type(await r.arrayBuffer());}
+  const [vertices,faces,neighbors,cellCenters,X,Y]=await Promise.all([typed('vertices.f32',Float32Array),typed('faces.u32',Uint32Array),typed('neighbors.i32',Int32Array),typed('cell-centers.f32',Float32Array),typed('X.f32',Float32Array),typed('Y.f32',Float32Array)]);
+  if(meta.cells!==manifest.cells||meta.times.length!==manifest.times.length)throw Error('Smooth reconstruction is stale; rebuild it from the current recording.');
+  const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+  for(let i=0;i<meta.cells;i++)for(let d=0;d<3;d++){min[d]=Math.min(min[d],cellCenters[i*3+d]);max[d]=Math.max(max[d],cellCenters[i*3+d]);}
+  smoothData={meta,vertices,faces,neighbors,cellCenters,fields:{X,Y},min,max};
+}
+function writeSmoothValues(){
+  const values=smoothData.fields[$('species').value],offset=frame*smoothData.meta.nodes,expanded=new Float32Array(smoothVertexCount);
+  for(let i=0;i<smoothVertexCount;i++)expanded[i]=values[offset+smoothNodeMap[i]];
+  attribute('concentration',expanded,1,smoothBuffers);
+}
+function ensureSmoothGeometry(){
+  const key=`${$('cutAxis').value}:${$('cut').value}`;if(key===smoothGeometryKey)return false;
+  const s=smoothData,axis={x:0,y:1,z:2}[$('cutAxis').value],threshold=Number($('cut').value),visible=new Uint8Array(s.meta.cells);
+  for(let i=0;i<visible.length;i++)visible[i]=((s.cellCenters[i*3+axis]-s.min[axis])/(s.max[axis]-s.min[axis])<=threshold)?1:0;
+  const ids=[];
+  for(let i=0;i<s.meta.faces;i++){const a=s.neighbors[i*2],b=s.neighbors[i*2+1],va=visible[a]===1,vb=b>=0&&visible[b]===1;
+    if(va!==vb){const j=i*3;if(va)ids.push(s.faces[j],s.faces[j+1],s.faces[j+2]);else ids.push(s.faces[j],s.faces[j+2],s.faces[j+1]);}}
+  smoothNodeMap=new Uint32Array(ids);smoothVertexCount=ids.length;
+  const p=new Float32Array(ids.length*3),normalSums=new Float64Array(s.meta.nodes*3);
+  for(let i=0;i<ids.length;i++)for(let d=0;d<3;d++)p[i*3+d]=s.vertices[ids[i]*3+d];
+  for(let i=0;i<ids.length;i+=3){const j=i*3,ux=p[j+3]-p[j],uy=p[j+4]-p[j+1],uz=p[j+5]-p[j+2],vx=p[j+6]-p[j],vy=p[j+7]-p[j+1],vz=p[j+8]-p[j+2];
+    const n=[uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx];for(let v=0;v<3;v++)for(let d=0;d<3;d++)normalSums[ids[i+v]*3+d]+=n[d];}
+  const normals=new Float32Array(p.length),bary=new Float32Array(p.length);
+  for(let i=0;i<ids.length;i++){const j=ids[i]*3,n=Math.hypot(normalSums[j],normalSums[j+1],normalSums[j+2])||1;for(let d=0;d<3;d++)normals[i*3+d]=normalSums[j+d]/n;}
+  for(let i=0;i<bary.length;i++)bary[i]=(i%9===0||i%9===4||i%9===8)?1:0;
+  attribute('position',p,3,smoothBuffers);attribute('normal',normals,3,smoothBuffers);attribute('center',new Float32Array(p.length),3,smoothBuffers);attribute('bary',bary,3,smoothBuffers);
+  smoothGeometryKey=key;writeSmoothValues();return true;
 }
 let drag=null;
 canvas.onpointerdown=e=>{drag=[e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId);};
@@ -198,8 +253,9 @@ try {initialize();
   await load($('preset').value);requestAnimationFrame(tick);
   if(captureMode){
     if(activePreset!=='engine')throw Error('Engine recording is required for capture.');
+    if(isSmooth()){$('captureSubtitle').textContent='X activator · interpolated surface field';$('captureInterpolation').hidden=false;}
     window.terreauxCapture={
-      metadata:()=>({times:manifest.times,species:'X',mapping:$('mapping').value,maximum:colorMaximum(),cells:manifest.cells}),
+      metadata:()=>({times:manifest.times,species:'X',mapping:$('mapping').value,maximum:colorMaximum(),cells:manifest.cells,fieldReconstruction:isSmooth()?'Volume-weighted nodal recovery; piecewise-linear scalar interpolation':'Cell-constant recorded values',edgesVisible:$('edges').checked}),
       render:progress=>{
         if(!Number.isFinite(progress)||progress<0||progress>1)throw Error('Capture progress must be between 0 and 1.');
         playing=false;frame=Math.min(manifest.times.length-1,Math.floor(progress*(manifest.times.length-1)+1e-9));

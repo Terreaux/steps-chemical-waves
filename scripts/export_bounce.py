@@ -1,5 +1,6 @@
 """Replay the actual ten-second orbit forward and backward, with direction labels."""
 import hashlib
+import argparse
 import json
 from pathlib import Path
 import subprocess
@@ -10,13 +11,15 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def export():
+def export(field='cells'):
     media=ROOT/'media'
-    source=media/'engine-activator-orbit.mp4'
-    forward=json.loads((media/'orbit-export.json').read_text())
+    smooth=field=='smooth'
+    stem='engine-activator-smooth' if smooth else 'engine-activator'
+    source=media/f'{stem}-orbit.mp4'
+    forward=json.loads((media/('smooth-orbit-export.json' if smooth else 'orbit-export.json')).read_text())
     assert forward['durationSeconds']==10 and forward['simulationTimeRange']==[0,10]
-    mp4=media/'engine-activator-bounce.mp4'
-    webm=media/'engine-activator-bounce.webm'
+    mp4=media/f'{stem}-bounce.mp4'
+    webm=media/f'{stem}-bounce.webm'
     labels=Path(tempfile.mkdtemp(prefix='terreaux-bounce-labels-'))
     font=ImageFont.truetype('/System/Library/Fonts/Helvetica.ttc',13)
     for name,text in [('forward','FORWARD PLAYBACK'),('reverse','REVERSE PLAYBACK')]:
@@ -47,9 +50,12 @@ def export():
             'directionLabels':['FORWARD PLAYBACK','REVERSE PLAYBACK'],
             'sourceVideoSHA256':hashlib.sha256(source.read_bytes()).hexdigest(),
             'files':{f.name:{'bytes':f.stat().st_size,'SHA256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in [mp4,webm]}}
-    (media/'bounce-export.json').write_text(json.dumps(report,indent=2)+'\n')
+    report['fieldRepresentation']='Volume-weighted nodal recovery and linear surface interpolation' if smooth else 'Recorded cell values'
+    (media/('smooth-bounce-export.json' if smooth else 'bounce-export.json')).write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 
 
 if __name__=='__main__':
-    export()
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--field',choices=['cells','smooth'],default='cells')
+    export(parser.parse_args().field)

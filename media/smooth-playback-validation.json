@@ -1,0 +1,57 @@
+{
+  "formats": [
+    {
+      "variant": "smooth-orbit",
+      "format": "mp4",
+      "codec": "h264",
+      "duration": 10.0,
+      "bytes": 2245583,
+      "ffmpegDecode": "passed",
+      "browserPlayAndSeek": "passed",
+      "verifiedSeekSeconds": [
+        5
+      ]
+    },
+    {
+      "variant": "smooth-orbit",
+      "format": "webm",
+      "codec": "vp9",
+      "duration": 10.0,
+      "bytes": 1694385,
+      "ffmpegDecode": "passed",
+      "browserPlayAndSeek": "passed",
+      "verifiedSeekSeconds": [
+        5
+      ]
+    },
+    {
+      "variant": "smooth-bounce",
+      "format": "mp4",
+      "codec": "h264",
+      "duration": 20.0,
+      "bytes": 4965611,
+      "ffmpegDecode": "passed",
+      "browserPlayAndSeek": "passed",
+      "verifiedSeekSeconds": [
+        5,
+        15
+      ]
+    },
+    {
+      "variant": "smooth-bounce",
+      "format": "webm",
+      "codec": "vp9",
+      "duration": 20.0,
+      "bytes": 3188172,
+      "ffmpegDecode": "passed",
+      "browserPlayAndSeek": "passed",
+      "verifiedSeekSeconds": [
+        5,
+        15
+      ]
+    }
+  ],
+  "browser": "Chromium",
+  "pageErrors": [],
+  "temporaryPlaybackServer": "stopped after verification"
+}

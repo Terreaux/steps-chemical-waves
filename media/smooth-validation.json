@@ -1,0 +1,108 @@
+{
+  "fieldReconstruction": "Volume-weighted nodal average over all incident tetrahedra, followed by piecewise-linear interpolation of scalar concentration on exposed triangles.",
+  "meshEdgesDisplayed": false,
+  "solverDataModified": false,
+  "timeInterpolation": false,
+  "constantFieldMaxError": 8.881784197001252e-16,
+  "numericAndSourceTests": "8 passed",
+  "browserUI": {
+    "modeSwitch": "passed",
+    "species": "passed",
+    "cutaway": "passed",
+    "baselineOptions": "passed",
+    "pageErrors": []
+  },
+  "videoPlayback": {
+    "formats": [
+      {
+        "variant": "smooth-orbit",
+        "format": "mp4",
+        "codec": "h264",
+        "duration": 10.0,
+        "bytes": 2245583,
+        "ffmpegDecode": "passed",
+        "browserPlayAndSeek": "passed",
+        "verifiedSeekSeconds": [
+          5
+        ]
+      },
+      {
+        "variant": "smooth-orbit",
+        "format": "webm",
+        "codec": "vp9",
+        "duration": 10.0,
+        "bytes": 1694385,
+        "ffmpegDecode": "passed",
+        "browserPlayAndSeek": "passed",
+        "verifiedSeekSeconds": [
+          5
+        ]
+      },
+      {
+        "variant": "smooth-bounce",
+        "format": "mp4",
+        "codec": "h264",
+        "duration": 20.0,
+        "bytes": 4965611,
+        "ffmpegDecode": "passed",
+        "browserPlayAndSeek": "passed",
+        "verifiedSeekSeconds": [
+          5,
+          15
+        ]
+      },
+      {
+        "variant": "smooth-bounce",
+        "format": "webm",
+        "codec": "vp9",
+        "duration": 20.0,
+        "bytes": 3188172,
+        "ffmpegDecode": "passed",
+        "browserPlayAndSeek": "passed",
+        "verifiedSeekSeconds": [
+          5,
+          15
+        ]
+      }
+    ],
+    "browser": "Chromium",
+    "pageErrors": [],
+    "temporaryPlaybackServer": "stopped after verification"
+  },
+  "bounceSymmetry": {
+    "criterion": "Same data/view at mirrored frame indices; exclude direction labels and allow lossy-codec error",
+    "maximumAllowedMeanRGBError": 3,
+    "pairs": [
+      {
+        "forwardFrame": 0,
+        "reverseFrame": 599,
+        "meanAbsoluteRGBError": 0.3850967261904762
+      },
+      {
+        "forwardFrame": 75,
+        "reverseFrame": 524,
+        "meanAbsoluteRGBError": 0.4620740327380952
+      },
+      {
+        "forwardFrame": 150,
+        "reverseFrame": 449,
+        "meanAbsoluteRGBError": 0.5563764880952381
+      },
+      {
+        "forwardFrame": 299,
+        "reverseFrame": 300,
+        "meanAbsoluteRGBError": 0.0074906994047619045
+      }
+    ],
+    "result": "passed"
+  },
+  "previousVideosUnchanged": {
+    "engine-activator-orbit.mp4": true,
+    "engine-activator-bounce.mp4": true,
+    "engine-activator-bounce.webm": true,
+    "engine-activator-orbit.webm": true
+  },
+  "publication": "Local iteration; not pushed or deployed.",
+  "fieldVertexCoordinatesModified": false,
+  "grayHardwareDisplayInsetUm": 0.005
+}

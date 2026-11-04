@@ -32,14 +32,16 @@ def capture_origin(url):
             server.shutdown()
 
 
-def export(url, duration, fps, width, height):
+def export(url, duration, fps, width, height, field='cells'):
     out = ROOT/'media'
     out.mkdir(exist_ok=True)
     qc = Path(tempfile.mkdtemp(prefix='terreaux-orbit-qc-'))
     frames = round(duration*fps)
-    mp4 = out/'engine-activator-orbit.mp4'
-    webm = out/'engine-activator-orbit.webm'
-    poster = out/'engine-activator-orbit-poster.jpg'
+    smooth=field=='smooth'
+    stem='engine-activator-smooth-orbit' if smooth else 'engine-activator-orbit'
+    mp4 = out/f'{stem}.mp4'
+    webm = out/f'{stem}.webm'
+    poster = out/f'{stem}-poster.jpg'
     ffmpeg_log = qc/'ffmpeg.log'
     command = ['ffmpeg','-hide_banner','-loglevel','warning','-y','-f','image2pipe','-vcodec','png',
                '-framerate',str(fps),'-i','pipe:0','-an','-c:v','libx264','-preset','medium',
@@ -51,11 +53,13 @@ def export(url, duration, fps, width, height):
         page.set_default_timeout(90000)
         errors = []
         page.on('pageerror',lambda e: errors.append(str(e)))
-        page.goto(origin.rstrip('/')+'/?capture=1',wait_until='networkidle')
+        page.goto(origin.rstrip('/')+'/?capture=1'+('&field=smooth' if smooth else ''),wait_until='networkidle')
         page.wait_for_function('window.terreauxCapture !== undefined',timeout=60000)
         metadata = page.evaluate('window.terreauxCapture.metadata()')
         assert abs(metadata['times'][-1]-10)<1e-9, 'The engine solver recording must actually run through 10 s.'
         assert len(metadata['times'])==251
+        if smooth:
+            assert 'nodal' in metadata['fieldReconstruction'] and not metadata['edgesVisible']
         encoder = subprocess.Popen(command,stdin=subprocess.PIPE,stderr=log)
         try:
             for i in range(frames):
@@ -96,7 +100,13 @@ def export(url, duration, fps, width, height):
               'context':'Gray core and stator vanes are solid context, not concentrations',
               'audio':False,'browserErrors':[],'inspectionFrames':[{k:v for k,v in s.items() if k!='image'} for s in samples],
               'files':{f.name:{'bytes':f.stat().st_size,'SHA256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in [mp4,webm,poster]}}
-    (out/'orbit-export.json').write_text(json.dumps(report,indent=2)+'\n')
+    if smooth:
+        reconstruction=json.loads((ROOT/'engine-smooth/manifest.json').read_text())
+        assert reconstruction['sourceManifestSHA256']==report['sourceManifestSHA256']
+        report['surfaceReconstruction']=reconstruction['method']
+        report['geometry']='Original coordinates, exposed faces only; shared-node smooth normals.'
+        report['reconstructionManifestSHA256']=hashlib.sha256((ROOT/'engine-smooth/manifest.json').read_bytes()).hexdigest()
+    (out/('smooth-orbit-export.json' if smooth else 'orbit-export.json')).write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({k:v for k,v in report.items() if k not in ['renderMetadata','inspectionFrames']},indent=2))
 
 
@@ -107,5 +117,6 @@ if __name__=='__main__':
     parser.add_argument('--fps',type=int,default=30)
     parser.add_argument('--width',type=int,default=1280)
     parser.add_argument('--height',type=int,default=720)
+    parser.add_argument('--field',choices=['cells','smooth'],default='cells')
     args=parser.parse_args()
-    export(args.url,args.duration,args.fps,args.width,args.height)
+    export(args.url,args.duration,args.fps,args.width,args.height,args.field)
