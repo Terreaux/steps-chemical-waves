@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
 const $ = id => document.getElementById(id);
 const canvas = $('scene');
+const captureMode = new URLSearchParams(location.search).get('capture') === '1';
+document.body.classList.toggle('capture-mode',captureMode);
+$('captureOverlay').hidden=!captureMode;
 let gl, program, manifest, positions, centers, fields, faceCells, frame = 0, playing = false;
 let yaw = 0.2, pitch = -0.35, zoom = 1, loaded = false, activePreset = 'data';
 const buffers = {};
@@ -73,7 +76,7 @@ function draw() {
   const axis=$('cutAxis').value;gl.uniform3f(gl.getUniformLocation(program,'cutAxis'),axis==='x'?1:0,axis==='y'?1:0,axis==='z'?1:0);
   bindGeometry(buffers);uniform('hardware',0);gl.drawArrays(gl.TRIANGLES,0,positions.length/3);
   if(activePreset==='engine' && $('hardware').checked && hardwarePositions){bindGeometry(hardwareBuffers);uniform('hardware',1);gl.drawArrays(gl.TRIANGLES,0,hardwarePositions.length/3);}
-  drawTrace();
+  if(!captureMode)drawTrace();
 }
 function drawTrace(){
   if(!manifest.traces)return;
@@ -193,4 +196,18 @@ try {initialize();
     if(r.ok){const o=document.createElement('option');o.value=preset;o.textContent=label;$('preset').prepend(o);$('preset').value=preset;}
   }
   await load($('preset').value);requestAnimationFrame(tick);
+  if(captureMode){
+    if(activePreset!=='engine')throw Error('Engine recording is required for capture.');
+    window.terreauxCapture={
+      metadata:()=>({times:manifest.times,species:'X',mapping:$('mapping').value,maximum:colorMaximum(),cells:manifest.cells}),
+      render:progress=>{
+        if(!Number.isFinite(progress)||progress<0||progress>1)throw Error('Capture progress must be between 0 and 1.');
+        playing=false;frame=Math.min(manifest.times.length-1,Math.floor(progress*(manifest.times.length-1)+1e-9));
+        $('species').value='X';yaw=.65+2*Math.PI*progress;pitch=-.22+.14*Math.sin(2*Math.PI*progress);zoom=1.08;
+        $('captureTime').textContent=`SIMULATION ${manifest.times[frame].toFixed(2)} s`;
+        updateFrame();return {frame,time:manifest.times[frame],yaw,pitch};
+      }
+    };
+    window.terreauxCapture.render(0);
+  }
 }catch(error){fail(error);}

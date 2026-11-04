@@ -35,7 +35,7 @@ def main(action):
         print('Local showcase service stopped.')
         return
     SITE.mkdir(exist_ok=True)
-    for name in ['index.html', 'app.js', 'style.css', 'LICENSE', 'README.md', 'data', 'volume', 'engine', 'docs']:
+    for name in ['index.html', 'app.js', 'style.css', 'LICENSE', 'README.md', 'data', 'volume', 'engine', 'docs', 'media']:
         source = ROOT/name
         if source.is_dir():
             shutil.copytree(source, SITE/name, dirs_exist_ok=True)

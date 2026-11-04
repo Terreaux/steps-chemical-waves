@@ -12,6 +12,11 @@ simulated. [Geometry, methods and limitations](docs/engine.md).
 
 ![Interactive chemical-wave viewer](docs/preview.png)
 
+A [10-second engine activator orbit](media/preview.html) is available as
+[MP4](media/engine-activator-orbit.mp4) and [WebM](media/engine-activator-orbit.webm),
+with a poster and [website embed instructions](media/README.md). It uses actual
+recorded X concentrations and keeps its scientific scope visible on screen.
+
 ## View locally
 
 ```sh

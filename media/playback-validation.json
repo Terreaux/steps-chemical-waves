@@ -1,0 +1,25 @@
+{
+  "formats": [
+    {
+      "format": "mp4",
+      "codec": "h264",
+      "duration": 10.0,
+      "bytes": 2654479,
+      "ffmpegDecode": "passed",
+      "browserPlayAndSeek": "passed",
+      "verifiedSeekSeconds": 5
+    },
+    {
+      "format": "webm",
+      "codec": "vp9",
+      "duration": 10.0,
+      "bytes": 2383829,
+      "ffmpegDecode": "passed",
+      "browserPlayAndSeek": "passed",
+      "verifiedSeekSeconds": 5
+    }
+  ],
+  "browser": "Chromium",
+  "pageErrors": [],
+  "temporaryPlaybackServer": "stopped after verification"
+}
