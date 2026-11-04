@@ -1,0 +1,36 @@
+{
+  "durationSeconds": 20,
+  "fps": 30,
+  "frames": 600,
+  "width": 1280,
+  "height": 720,
+  "simulationDurationSeconds": 10,
+  "simulationSaveIntervalSeconds": 0.04,
+  "simulationSavedStates": 251,
+  "forwardVideoSeconds": [
+    0,
+    10
+  ],
+  "reverseVideoSeconds": [
+    10,
+    20
+  ],
+  "camera": "One full rotation forward, followed by the same rotation backward",
+  "playback": "Forward frames 0\u2026299 then 299\u20260. A repeated endpoint frame at each turnaround.",
+  "scientificScope": "Reverse is video playback of saved states, never reversed solver dynamics.",
+  "directionLabels": [
+    "FORWARD PLAYBACK",
+    "REVERSE PLAYBACK"
+  ],
+  "sourceVideoSHA256": "38657da793e9f6a7df107fea9b37fe226935536b593127976d1c7e770d9eda10",
+  "files": {
+    "engine-activator-bounce.mp4": {
+      "bytes": 7802729,
+      "SHA256": "aa04489932a2c4712412425613ab6239df7a8d3fc5ff0ff6bb05c0faa28d0227"
+    },
+    "engine-activator-bounce.webm": {
+      "bytes": 6149031,
+      "SHA256": "2c4f0a3375feae3d3d076943f9a744ab5c00789cf7e063904ff2bf35eaf1e0da"
+    }
+  }
+}

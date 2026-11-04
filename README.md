@@ -12,10 +12,12 @@ simulated. [Geometry, methods and limitations](docs/engine.md).
 
 ![Interactive chemical-wave viewer](docs/preview.png)
 
-A [10-second engine activator orbit](media/preview.html) is available as
-[MP4](media/engine-activator-orbit.mp4) and [WebM](media/engine-activator-orbit.webm),
-with a poster and [website embed instructions](media/README.md). It uses actual
-recorded X concentrations and keeps its scientific scope visible on screen.
+A [20-second engine activator bounce loop](media/preview.html) shows the actual
+10-second simulation with one full camera orbit forward, then replays it backward.
+[MP4](media/engine-activator-bounce.mp4) and [WebM](media/engine-activator-bounce.webm)
+are available with a poster and [website embed instructions](media/README.md).
+The forward-only ten-second clip is retained. Scientific scope and reverse
+playback are labeled on screen.
 
 ## View locally
 

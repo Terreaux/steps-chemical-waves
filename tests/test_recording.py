@@ -1,5 +1,6 @@
 """Check displayed values against the original published scientific output."""
 import hashlib
+from array import array
 import json
 import math
 from pathlib import Path
@@ -69,11 +70,16 @@ class RecordingTests(unittest.TestCase):
         self.assertEqual(meta['meshSHA256'], hashlib.sha256((ROOT/'meshes/engine-cavity.msh').read_bytes()).hexdigest())
         self.assertEqual(meta['cells'], report['tetrahedra'])
         self.assertEqual(meta['faces'], meta['cells']*4)
-        self.assertEqual(len(meta['times']), 101)
+        self.assertEqual(len(meta['times']), 251)
+        self.assertEqual(meta['times'][0], 0)
+        self.assertAlmostEqual(meta['times'][-1], 10)
+        self.assertAlmostEqual(meta['saveIntervalSeconds'], .04)
+        for i,t in enumerate(meta['times']):
+            self.assertAlmostEqual(t,i*.04,places=9)
         self.assertTrue(all(a < b for a,b in zip(meta['times'],meta['times'][1:])))
         for species in ['X','Y']:
             raw=(ROOT/f'engine/{species}.f32').read_bytes()
-            values=struct.unpack('<'+str(len(raw)//4)+'f',raw)
+            values=array('f',raw)
             self.assertEqual(len(values), meta['cells']*len(meta['times']))
             self.assertTrue(all(math.isfinite(v) and v>=0 for v in values))
             self.assertGreater(meta['species'][species]['displayP995'],0)

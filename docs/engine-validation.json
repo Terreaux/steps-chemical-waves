@@ -5,9 +5,10 @@
   "solver": "Tetexact",
   "STEPS": "5.1.0",
   "seed": 1234,
-  "durationSeconds": 4.0,
-  "frames": 101,
-  "simulationRuntimeSeconds": 255.48964387498563,
+  "durationSeconds": 10.0,
+  "saveIntervalSeconds": 0.04,
+  "frames": 251,
+  "simulationRuntimeSeconds": 398.79856220900547,
   "mesh": {
     "generator": "Gmsh 4.15.2",
     "unit": "\u00b5m",
@@ -45,12 +46,17 @@
   "meshSHA256": "e605fcb7b60f73671b837fd64511805289f896d3efe5e7fc50b69d43a1b7126f",
   "recordingSHA256": {
     "face-cells.f32": "031a71b47fd323e22be374df245c78f5d0ba048055721a73b19dee7e5f1d0e28",
-    "Y.f32": "26802a7ef2695e3a39b914ad0c0da0993ddee31d109ada01b261bf5d7c54e7ed",
-    "X.f32": "69455b738b3fd99727cfebe65fede9f0f898502409944cf45bb2f5b91dcaf061",
+    "Y.f32": "015d15b00b8449d823ad6c7f821ca36241ee734c7272a4574516a5c33c9663d7",
+    "X.f32": "5e3569219cbc3d27fdd0e7969856a0001696e03c3d40d3a51084e4a43e09d3b0",
     "positions.f32": "290dbdad696796ab0cd5d0860631de282be57c9419fe3c84eedf7239bc918c52",
     "centers.f32": "37a23645861fab073d97a7b23fb7a64da90386fda6e0eea85d960ce0b1d3f293"
   },
   "engineSeededRepeatPerformed": false,
+  "previousPublicationCommit": "104576c189929a5766951ffc5c720b8315409b8e",
+  "previousFourSecondPrefixMatches": {
+    "X": true,
+    "Y": true
+  },
   "tests": {
     "pythonUnittest": "5 passed; no skips",
     "browser": {
@@ -70,15 +76,100 @@
         "baseline switch",
         "mobile overflow"
       ]
+    },
+    "videoPlayback": {
+      "formats": [
+        {
+          "variant": "orbit",
+          "format": "mp4",
+          "codec": "h264",
+          "duration": 10.0,
+          "bytes": 3513262,
+          "ffmpegDecode": "passed",
+          "browserPlayAndSeek": "passed",
+          "verifiedSeekSeconds": [
+            5
+          ]
+        },
+        {
+          "variant": "orbit",
+          "format": "webm",
+          "codec": "vp9",
+          "duration": 10.0,
+          "bytes": 3315672,
+          "ffmpegDecode": "passed",
+          "browserPlayAndSeek": "passed",
+          "verifiedSeekSeconds": [
+            5
+          ]
+        },
+        {
+          "variant": "bounce",
+          "format": "mp4",
+          "codec": "h264",
+          "duration": 20.0,
+          "bytes": 7802729,
+          "ffmpegDecode": "passed",
+          "browserPlayAndSeek": "passed",
+          "verifiedSeekSeconds": [
+            5,
+            15
+          ]
+        },
+        {
+          "variant": "bounce",
+          "format": "webm",
+          "codec": "vp9",
+          "duration": 20.0,
+          "bytes": 6149031,
+          "ffmpegDecode": "passed",
+          "browserPlayAndSeek": "passed",
+          "verifiedSeekSeconds": [
+            5,
+            15
+          ]
+        }
+      ],
+      "browser": "Chromium",
+      "pageErrors": [],
+      "temporaryPlaybackServer": "stopped after verification"
+    },
+    "bounceSymmetry": {
+      "criterion": "Same data/view at mirrored frame indices; exclude direction labels and allow lossy-codec error",
+      "maximumAllowedMeanRGBError": 3,
+      "pairs": [
+        {
+          "forwardFrame": 0,
+          "reverseFrame": 599,
+          "meanAbsoluteRGBError": 0.571694568452381
+        },
+        {
+          "forwardFrame": 75,
+          "reverseFrame": 524,
+          "meanAbsoluteRGBError": 0.4903404017857143
+        },
+        {
+          "forwardFrame": 150,
+          "reverseFrame": 449,
+          "meanAbsoluteRGBError": 0.3621019345238095
+        },
+        {
+          "forwardFrame": 299,
+          "reverseFrame": 300,
+          "meanAbsoluteRGBError": 0.008191964285714285
+        }
+      ],
+      "result": "passed"
     }
   },
-  "preservedBaselines": "Original twin-chamber recording hashes match docs/validation.json; official slab conversion still matches every archived concentration.",
-  "scope": "Original conceptual sealed microscopic engine cavity. Reaction-diffusion only; no airflow, combustion, heat transfer or engine performance.",
+  "preservedBaselines": "Twin-chamber recording hashes still match docs/validation.json; every slab concentration still matches the original archive.",
+  "scope": "Original conceptual sealed microscopic engine cavity. Reaction-diffusion only; no airflow, combustion or engine performance.",
   "limitations": [
-    "Single stochastic trajectory",
-    "Engine trajectory has not been independently repeated",
+    "One stochastic trajectory",
+    "No full ten-second independent repeat",
     "Mesh/time convergence and independent solver validation not performed",
-    "Rare-peak color clipping is visual only and explicitly labeled",
-    "Gray hardware is context, not chemical data"
-  ]
+    "Video reverse is playback only",
+    "Rare peaks saturate at an explicitly labeled visual color limit"
+  ],
+  "mediaSourceMatchesRecording": true
 }

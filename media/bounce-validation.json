@@ -1,0 +1,27 @@
+{
+  "criterion": "Same data/view at mirrored frame indices; exclude direction labels and allow lossy-codec error",
+  "maximumAllowedMeanRGBError": 3,
+  "pairs": [
+    {
+      "forwardFrame": 0,
+      "reverseFrame": 599,
+      "meanAbsoluteRGBError": 0.571694568452381
+    },
+    {
+      "forwardFrame": 75,
+      "reverseFrame": 524,
+      "meanAbsoluteRGBError": 0.4903404017857143
+    },
+    {
+      "forwardFrame": 150,
+      "reverseFrame": 449,
+      "meanAbsoluteRGBError": 0.3621019345238095
+    },
+    {
+      "forwardFrame": 299,
+      "reverseFrame": 300,
+      "meanAbsoluteRGBError": 0.008191964285714285
+    }
+  ],
+  "result": "passed"
+}

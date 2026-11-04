@@ -4,15 +4,32 @@ Uses the same local WebGL renderer as interactive playback. Time samples are
 held, never interpolated; the camera moves smoothly between recorded samples.
 """
 import argparse
+from contextlib import contextmanager
+from functools import partial
 import hashlib
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import subprocess
 import tempfile
+import threading
 
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@contextmanager
+def capture_origin(url):
+    if url:
+        yield url
+        return
+    with ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=str(ROOT))) as server:
+        threading.Thread(target=server.serve_forever,daemon=True).start()
+        try:
+            yield f'http://127.0.0.1:{server.server_port}'
+        finally:
+            server.shutdown()
 
 
 def export(url, duration, fps, width, height):
@@ -28,15 +45,17 @@ def export(url, duration, fps, width, height):
                '-framerate',str(fps),'-i','pipe:0','-an','-c:v','libx264','-preset','medium',
                '-crf','20','-threads','2','-pix_fmt','yuv420p','-movflags','+faststart',str(mp4)]
     samples = []
-    with ffmpeg_log.open('wb') as log, sync_playwright() as p:
+    with capture_origin(url) as origin, ffmpeg_log.open('wb') as log, sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={'width':width,'height':height},device_scale_factor=1)
         page.set_default_timeout(90000)
         errors = []
         page.on('pageerror',lambda e: errors.append(str(e)))
-        page.goto(url.rstrip('/')+'/?capture=1',wait_until='networkidle')
+        page.goto(origin.rstrip('/')+'/?capture=1',wait_until='networkidle')
         page.wait_for_function('window.terreauxCapture !== undefined',timeout=60000)
         metadata = page.evaluate('window.terreauxCapture.metadata()')
+        assert abs(metadata['times'][-1]-10)<1e-9, 'The engine solver recording must actually run through 10 s.'
+        assert len(metadata['times'])==251
         encoder = subprocess.Popen(command,stdin=subprocess.PIPE,stderr=log)
         try:
             for i in range(frames):
@@ -46,7 +65,7 @@ def export(url, duration, fps, width, height):
                 if i in [0,frames//4,frames//2,3*frames//4,frames-1]:
                     path = qc/f'{i:04d}.png';path.write_bytes(png)
                     samples.append({'videoFrame':i,**state,'image':str(path)})
-                if i == round(frames*.08):
+                if i == round(frames*.02):
                     page.screenshot(path=str(poster),type='jpeg',quality=94)
                 if i%fps == 0:
                     print(f'Rendered {i}/{frames} frames',flush=True)
@@ -83,7 +102,7 @@ def export(url, duration, fps, width, height):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
-    parser.add_argument('--url',default='http://127.0.0.1:8766')
+    parser.add_argument('--url',help='Optional existing server; otherwise use a scoped temporary localhost server.')
     parser.add_argument('--duration',type=float,default=10)
     parser.add_argument('--fps',type=int,default=30)
     parser.add_argument('--width',type=int,default=1280)

@@ -51,7 +51,7 @@ different time scales and is not claimed here.
 STEPS 5.1.0's serial `Tetexact` solver uses seed 1234, the official tutorial's
 reaction constants, and diffusion coefficient 10⁻¹³ m²/s for both species.
 Initial X is 5 µM, raised to 50 µM where x < −1.05 µm, and initial Y is 140 µM.
-The system then evolves without forcing. It records 101 states over 4 seconds,
+The system then evolves without forcing. It records 251 states over 10 seconds,
 at 0.04-second intervals. Regional plots are volume-weighted means for cells
 with center x < −0.5 µm (front) or x > 0.5 µm (rear); they do not describe flow.
 
@@ -91,7 +91,7 @@ reaction model retains its attribution to the GPL-2.0 CNS-OIST example in
 
 ```sh
 .venv/bin/python scripts/build_engine.py
-.venv/bin/python scripts/simulate_volume.py --preset engine
+.venv/bin/python scripts/simulate_volume.py --preset engine --duration 10
 ```
 
 The mesh, script and data checksums and runtime are inspectable in the quality

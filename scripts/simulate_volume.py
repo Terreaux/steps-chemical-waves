@@ -20,8 +20,12 @@ from steps.saving import ResultSelector
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def simulate(preset='volume'):
+def simulate(preset='volume', duration=None):
     engine = preset == 'engine'
+    duration = float(duration if duration is not None else (10.0 if engine else 3.0))
+    if not np.isfinite(duration) or duration <= 0:
+        raise ValueError('Duration must be positive and finite.')
+    save_interval = .04 if engine else .02
     mdl = Model()
     r = ReactionManager()
     with mdl:
@@ -43,7 +47,7 @@ def simulate(preset='volume'):
     sim = Simulation('Tetexact', mdl, mesh, RNG('mt19937', 512, 1234))
     rs = ResultSelector(sim)
     concentrations = rs.TETS(mesh.tets).LIST(X, Y).Conc
-    sim.toSave(concentrations, dt=.04 if engine else .02)
+    sim.toSave(concentrations, dt=save_interval)
     sim.newRun()
     sim.comp.X.Conc = 5e-6
     sim.comp.Y.Conc = 1.4e-4
@@ -53,7 +57,8 @@ def simulate(preset='volume'):
     for tet in stimulated:
         sim.TET(tet).X.Conc = 5e-5
     begin = time.perf_counter()
-    sim.run(4.0 if engine else 3.0)
+    print(f'Running real STEPS {preset} trajectory through {duration:g} s; saving every {save_interval:g} s.', flush=True)
+    sim.run(duration)
     elapsed = time.perf_counter()-begin
     out = ROOT / preset
     out.mkdir(exist_ok=True)
@@ -84,6 +89,7 @@ def simulate(preset='volume'):
     meta = {'volume': True, 'label': f'TWIN CHAMBERS / {len(mesh.tets):,} VOLUME TETRAHEDRA', 'radius': 2.2,
             'description': 'Original twin-chamber volume; serial STEPS Tetexact run, seed 1234. An initial X stimulus in the left chamber is followed by unforced reaction–diffusion. Cutaway removes whole tetrahedra, not an interpolated plane. Fixed color range across every frame; no time interpolation. This mesh has passed geometry checks; scientific mesh convergence remains untested.',
             'solver': 'Tetexact', 'stepsVersion': steps.__version__, 'seed': 1234, 'elapsedSeconds': elapsed,
+            'simulationDurationSeconds': duration, 'saveIntervalSeconds': save_interval,
             'faces': len(face_cells), 'cells': len(mesh.tets), 'times': times,
             'positionUnit': 'µm', 'concentrationUnit': 'µM', 'meshScaleMeters': 5e-7,
             'meshSHA256': hashlib.sha256(mesh_path.read_bytes()).hexdigest(),
@@ -112,4 +118,6 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--preset', choices=['volume', 'engine'], default='volume')
-    simulate(parser.parse_args().preset)
+    parser.add_argument('--duration', type=float)
+    args = parser.parse_args()
+    simulate(args.preset, args.duration)
